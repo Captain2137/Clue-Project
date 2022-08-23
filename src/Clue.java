@@ -23,8 +23,12 @@ public class Clue {
             System.out.println();
 
             switch (menu) {
-                case 1 -> start();
-                default -> System.out.println("Exiting");
+                case 1:
+                    start();
+                    break;
+                default:
+                    System.out.println("Exiting");
+                    break;
             }
         } while (menu != 0);
     }
@@ -193,7 +197,7 @@ public class Clue {
                 System.out.println();
 
                 switch (menu) {
-                    case 1 -> {
+                    case 1:
                         guess = new int[3];
 
                         System.out.println("Suspect: ");
@@ -322,23 +326,25 @@ public class Clue {
                                 System.out.println();
                             }
                         }
-                    }
-                    case 2 -> {
-                    }
-                    case 3 -> {
+                        break;
+                    case 2:
+                        break;
+                    case 3:
                         print(players);
                         i--;
-                    }
-                    case 4 -> {
+                        break;
+                    case 4:
                         printHistory(history);
                         i--;
-                    }
-                    case 5 -> {
+                        break;
+                    case 5:
                         System.out.println("It was " + cards[found[0]] + " with the " + cards[found[1]] + " in the " + cards[found[2]]);
                         System.out.println();
                         i--;
-                    }
-                    default -> end = false;
+                        break;
+                    default:
+                        end = false;
+                        break;
                 }
             }
 
@@ -385,19 +391,19 @@ public class Clue {
             //only left horizontal
             for (int i = 1; i < players[0].length; i++) {
                 count = 0;
-                for (int[] player : players) {
-                    if (player[i] == 3) {
+                for (int j = 0; j < players.length; j++) {
+                    if (players[j][i] == 3) {
                         count = -1;
                         break;
-                    } else if (player[i] != 1) {
+                    } else if (players[j][i] != 1) {
                         count++;
                     }
                 }
 
                 if (count == -1) {
-                    for (int[] player : players) {
-                        if (player[i] != 3 && player[i] != 1) {
-                            player[i] = 1;
+                    for (int j = 0; j < players.length; j++) {
+                        if (players[j][i] != 3 && players[j][i] != 1) {
+                            players[j][i] = 1;
                             changes[3]++;
                         }
                     }
@@ -634,10 +640,18 @@ public class Clue {
         for (int i = 1; i <= players.length; i++) {
             System.out.print(" ");
             switch (players[i - 1][num]) {
-                case 1 -> System.out.print("X");
-                case 2 -> System.out.print("?");
-                case 3 -> System.out.print("O");
-                default -> System.out.print(" ");
+                case 1:
+                    System.out.print("X");
+                    break;
+                case 2:
+                    System.out.print("?");
+                    break;
+                case 3:
+                    System.out.print("O");
+                    break;
+                default:
+                    System.out.print(" ");
+                    break;
             }
             System.out.print(" |");
         }
