@@ -1,200 +1,129 @@
 // @author Michael Q
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Scanner;
 
 public class Clue {
 
+    static final boolean DEBUG = false;
+
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
 
-        int menu;
+        System.out.print("Total number of players: ");
+        int menu = scan.nextInt();
+        if (menu < 3 || menu > 6) {
+            System.out.println("ERROR: Number of players must be between 3 - 6");
+            System.exit(0);
+        }
 
-        do {
-            System.out.println("1: Start New Game");
-            System.out.println("0: Exit");
+        // Players and their cards: player, cards (first is num of cards held)
+        int[][] players = new int[menu][22];
+
+        System.out.print("Your turn order: ");
+        int yourTurn = scan.nextInt();
+        if (yourTurn < 1 || yourTurn > players.length) {
+            System.out.println("ERROR: Your turn order must be between 1 - " + players.length);
+            System.exit(0);
+        }
+
+        int count = 21;
+        for (int i = 1; i <= players.length; i++) {
+            if (yourTurn == i) {
+                System.out.print("Number of cards you have: ");
+            } else {
+                System.out.print("Number of cards player " + i + " has: ");
+            }
 
             menu = scan.nextInt();
-            while (menu < 0 || menu > 1) {
-                System.out.println("Enter 0 - 1");
+            players[i - 1][0] = menu;
+            count -= menu;
+        }
 
-                menu = scan.nextInt();
+        if (count != 3) {
+            System.out.println("ERROR: Too many or too little cards");
+            System.exit(0);
+        }
+
+        System.out.println("\nWhat cards do you have?");
+        System.out.println("1: Colonel Mustard      8: Candlestick      15: Dining Room");
+        System.out.println("2: Professor Plum       9: Revolver         16: Kitchen");
+        System.out.println("3: Mr. Green            10: Rope            17: Ballroom");
+        System.out.println("4: Mrs. Peacock         11: Lead Pipe       18: Conservatory");
+        System.out.println("5: Miss Scarlet         12: Wrench          19: Billiard Room");
+        System.out.println("6: Mrs. White           13: Hall            20: Library");
+        System.out.println("7: Knife                14: Lounge          21: Study");
+
+        for (int i = 0; i < players[yourTurn - 1][0]; i++) {
+            menu = scan.nextInt();
+
+            if (menu > 0 && menu < 22 && players[yourTurn - 1][menu] == 0) {
+                for (int[] player : players) {
+                    player[menu] = 1;   // If not duplicate
+                }
+            } else {
+                i--;    // If duplicate, ignore
             }
-            System.out.println();
+        }
+        System.out.println();
 
-            switch (menu) {
-                case 1 -> start();
-                default -> System.out.println("Exiting");
-            }
-        } while (menu != 0);
-    }
+        if (DEBUG) {
+            System.out.println("DEBUG: Starting card");
+            printCard(players, yourTurn);
+        }
 
-    public static void start() {
-        Scanner scan = new Scanner(System.in);
-
-        int menu;
         int turn = 1;
-        int count;
-        boolean end = true;
-        ArrayList<ArrayList<ArrayList<Integer>>> history = new ArrayList<>(); //player, turn, guess
-        int[][] players; // player, cards (first num is num of cards)
-        int[] guess;
-        int[] found = new int[3];
-        String temp;
-
+        boolean end = false;
+        int[] solution = new int[3];
         String[] cards = {"???????", "Colonel Mustard", "Professor Plum", "Mr. Green",
             "Mrs. Peacock", "Miss Scarlet", "Mrs. White", "Knife", "Candlestick",
             "Revolver", "Rope", "Lead Pipe", "Wrench", "Hall", "Lounge", "Dining Room",
             "Kitchen", "Ballroom", "Conservatory", "Billiard Room", "Library", "Study"};
 
-        System.out.print("Total number of players: ");
-        players = new int[scan.nextInt()][22];
+        // History of guesses: first num is player and then guess made
+        ArrayList<List<Integer>> guessHistory = new ArrayList<>();
 
-        for (int[] player : players) {
-            history.add(new ArrayList<>());
-        }
-
-        for (int i = 1; i <= players.length; i++) {
-            System.out.print("Number of cards player " + i + " has: ");
-            players[i - 1][0] = scan.nextInt();
-        }
-        System.out.println();
-
-        System.out.println("What cards do you have");
-        System.out.println("Enter one at a time and then enter 'Done'");
-
-        scan.nextLine();
-        temp = scan.nextLine();
-        while (!temp.equalsIgnoreCase("done")) {
-            if (temp.equalsIgnoreCase("Colonel Mustard")) {
-                for (int[] player : players) {
-                    player[1] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Professor Plum")) {
-                for (int[] player : players) {
-                    player[2] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Mr. Green")) {
-                for (int[] player : players) {
-                    player[3] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Mrs. Peacock")) {
-                for (int[] player : players) {
-                    player[4] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Miss Scarlet")) {
-                for (int[] player : players) {
-                    player[5] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Mrs. White")) {
-                for (int[] player : players) {
-                    player[6] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Knife")) {
-                for (int[] player : players) {
-                    player[7] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Candlestick")) {
-                for (int[] player : players) {
-                    player[8] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Revolver")) {
-                for (int[] player : players) {
-                    player[9] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Rope")) {
-                for (int[] player : players) {
-                    player[10] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Lead Pipe")) {
-                for (int[] player : players) {
-                    player[11] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Wrench")) {
-                for (int[] player : players) {
-                    player[12] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Hall")) {
-                for (int[] player : players) {
-                    player[13] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Lounge")) {
-                for (int[] player : players) {
-                    player[14] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Dining Room")) {
-                for (int[] player : players) {
-                    player[15] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Kitchen")) {
-                for (int[] player : players) {
-                    player[16] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Ballroom")) {
-                for (int[] player : players) {
-                    player[17] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Conservatory")) {
-                for (int[] player : players) {
-                    player[18] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Billiard Room")) {
-                for (int[] player : players) {
-                    player[19] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Library")) {
-                for (int[] player : players) {
-                    player[20] = 1;
-                }
-            } else if (temp.equalsIgnoreCase("Study")) {
-                for (int[] player : players) {
-                    player[21] = 1;
-                }
-            } else {
-                System.out.println("'" + temp + "' Does not match any");
-            }
-
-            temp = scan.nextLine();
-        }
-        System.out.println();
+        // Guesses that contain at least one solution part: first num is player and then guess made
+        ArrayList<List<Integer>> possibleSolution = new ArrayList<>();
 
         do {
             System.out.println("Turn " + turn);
-            check(players, history);
 
+            turn:
             for (int i = 1; i <= players.length; i++) {
-                if (end == false) {
-                    break;
+                if (i == yourTurn) {
+                    printCard(players, yourTurn);
+                    System.out.println("Your turn");
+                } else {
+                    System.out.println("Player " + i + "'s turn");
                 }
 
-                System.out.println("Player " + i + "'s turn");
                 System.out.println("1: Guess");
                 System.out.println("2: Skip");
-                System.out.println("3: Print Card");
-                System.out.println("4: History");
-
+                System.out.println("3: Print card");
+                System.out.print("4: Show answer (");
                 count = 0;
-                System.out.print("5: Show Answer ");
-                for (int j = 0; j < found.length; j++) {
-                    if (found[j] != 0) {
+                for (int j : solution) {
+                    if (j != 0) {
                         count++;
                     }
                 }
-                System.out.println("(" + count + "/" + found.length + ")");
-
-                System.out.println("0: Game End");
+                System.out.println(count + "/3)");
+                System.out.println("0: End game");
 
                 menu = scan.nextInt();
-                while (menu < 0 || menu > 5) {
-                    System.out.println("Enter 0 - 5");
-
+                while (menu < 0 || menu > 4) {
+                    System.out.println("Enter 0 - 4");
                     menu = scan.nextInt();
                 }
                 System.out.println();
 
                 switch (menu) {
                     case 1 -> {
-                        guess = new int[3];
+                        int[] guess = new int[3];
 
                         System.out.println("Suspect: ");
                         System.out.println("1: Colonel Mustard");
@@ -207,13 +136,11 @@ public class Clue {
                         menu = scan.nextInt();
                         while (menu < 1 || menu > 6) {
                             System.out.println("Enter 1 - 6");
-
                             menu = scan.nextInt();
                         }
                         guess[0] = menu;
-                        System.out.println();
 
-                        System.out.println("weapon: ");
+                        System.out.println("\nWeapon: ");
                         System.out.println("1: Knife");
                         System.out.println("2: Candlestick");
                         System.out.println("3: Revolver");
@@ -224,13 +151,11 @@ public class Clue {
                         menu = scan.nextInt();
                         while (menu < 1 || menu > 6) {
                             System.out.println("Enter 1 - 6");
-
                             menu = scan.nextInt();
                         }
                         guess[1] = menu + 6;
-                        System.out.println();
 
-                        System.out.println("Room: ");
+                        System.out.println("\nRoom: ");
                         System.out.println("1: Hall");
                         System.out.println("2: Lounge");
                         System.out.println("3: Dining Room");
@@ -244,290 +169,474 @@ public class Clue {
                         menu = scan.nextInt();
                         while (menu < 1 || menu > 9) {
                             System.out.println("Enter 1 - 9");
-
                             menu = scan.nextInt();
                         }
                         guess[2] = menu + 12;
-                        System.out.println();
+
+                        System.out.println("\nGuess: " + cards[guess[0]] + " with the " + cards[guess[1]] + " in the " + cards[guess[2]]);
 
                         count = 0;
                         for (int j = 1; j < players.length; j++) {
-                            int num = (i + j > players.length ? i + j - players.length : i + j);
+                            int player = i + j > players.length ? i + j - players.length : i + j;
+                            String temp;
 
-                            System.out.print("Does Player " + num + " show (y/n): ");
-                            temp = scan.next();
+                            if (i == yourTurn) {
+                                scan.nextLine();
+                                System.out.print("Does player " + player + " show you a card (y/n)? ");
+                                temp = scan.next();
 
-                            if (temp.equalsIgnoreCase("y") || temp.equalsIgnoreCase("yes")) {
-                                if (i == 1) {
+                                if (temp.equalsIgnoreCase("y") || temp.equalsIgnoreCase("yes")) {
                                     System.out.println("What card were you shown?: ");
-                                    System.out.println(" 1: Colonel Mustard     13: Hall");
-                                    System.out.println(" 2: Professor Plum      14: Lounge");
-                                    System.out.println(" 3: Mr. Green           15: Dining Room");
-                                    System.out.println(" 4: Mrs. Peacock        16: Kitchen");
-                                    System.out.println(" 5: Miss Scarlet        17: Ballroom");
-                                    System.out.println(" 6: Mrs. White          18: Conservatory");
-                                    System.out.println(" 7: Knife               19: Billiard Room");
-                                    System.out.println(" 8: Candlestick         20: Library");
-                                    System.out.println(" 9: Revolver            21: Study");
-                                    System.out.println("10: Rope");
-                                    System.out.println("11: Lead Pipe");
-                                    System.out.println("12: Wrench");
+                                    System.out.println(guess[0] + ": " + cards[guess[0]]);
+                                    System.out.println(guess[1] + ": " + cards[guess[1]]);
+                                    System.out.println(guess[2] + ": " + cards[guess[2]]);
 
                                     menu = scan.nextInt();
-                                    while (menu < 1 || menu > 21) {
-                                        System.out.println("Enter 1 - 21");
-
+                                    while (menu != guess[0] && menu != guess[1] && menu != guess[2]) {
+                                        System.out.println("Enter " + guess[0] + ", " + guess[1] + ", or " + guess[2]);
                                         menu = scan.nextInt();
                                     }
-                                    players[num - 1][menu] = 3;
-                                    System.out.println();
-                                } else {
-                                    if (num != 1) {
-                                        history.get(num - 1).add(new ArrayList<>());
-                                        for (int k = 0; k < guess.length; k++) {
-                                            if (players[num - 1][guess[k]] != 1 && players[num - 1][guess[k]] != 3 && (num - 1) != 0) {
-                                                players[num - 1][guess[k]] = 2;
-                                            }
-                                            history.get(num - 1).get(history.get(num - 1).size() - 1).add(guess[k]);
+
+                                    players[player - 1][menu] = 3;  // Marks that they have that card
+                                    for (int k = 0; k < players.length; k++) {
+                                        if (k != player - 1) {
+                                            players[k][menu] = 1;   // Marks that no one else has that card
                                         }
                                     }
-                                }
 
-                                System.out.println();
-                                break;
-                            } else {
-                                count++;
-
-                                for (int k = 0; k < guess.length; k++) {
-                                    if (num != 1) {
-                                        players[num - 1][guess[k]] = 1;
+                                    if (DEBUG) {
+                                        System.out.println("\nDEBUG: Card after shown " + cards[menu] + " by player " + player);
+                                        printCard(players, yourTurn);
                                     }
-                                }
 
-                                if (i == 1 && count == (players.length - 1)) {
+                                    break;
+                                } else {    // If didn't show
                                     for (int k = 0; k < guess.length; k++) {
-                                        if (players[0][guess[k]] != 1 && players[num - 1][guess[k]] != 3) {
-                                            players[0][guess[k]] = 3;
-                                            if (guess[k] <= 6) {
-                                                found[0] = guess[k];
-                                            } else if (guess[k] > 6 && guess[k] <= 12) {
-                                                found[1] = guess[k];
-                                            } else if (guess[k] > 12) {
-                                                found[2] = guess[k];
+                                        players[player - 1][guess[k]] = 1;  // Marks that they don't have those cards
+                                    }
+
+                                    if (DEBUG) {
+                                        System.out.println("\nDEBUG: Card after player " + player + " didn't show either " + cards[guess[0]] + ", " + cards[guess[1]] + ", or " + cards[guess[2]]);
+                                        printCard(players, yourTurn);
+                                    }
+
+                                    count++;    // Increases count every time no one shows
+                                    if (count == players.length - 1) {  // If no one showed, at least one has to be part of the solution
+                                        for (int k = 0; k < guess.length; k++) {
+                                            if (players[yourTurn - 1][guess[k]] == 0 || players[yourTurn - 1][guess[k]] == 2) { // If not marked/not a card you have
+                                                players[yourTurn - 1][guess[k]] = 3;    // Mark as found solution
+
+                                                if (guess[k] <= 6) {        // Add to correct solution index
+                                                    solution[0] = guess[k];
+                                                } else if (guess[k] > 6 && guess[k] <= 12) {
+                                                    solution[1] = guess[k];
+                                                } else {
+                                                    solution[2] = guess[k];
+                                                }
                                             }
+                                        }
+
+                                        if (DEBUG) {
+                                            System.out.println("\nDEBUG: Card after no one showed you a card");
+                                            printCard(players, yourTurn);
                                         }
                                     }
                                 }
+                            } else {    // If not your turn
+                                if (player == yourTurn) {
+                                    scan.nextLine();
+                                    System.out.print("Do you show them a card (y/n)? ");
+                                    temp = scan.next();
 
-                                System.out.println();
+                                    if (temp.equalsIgnoreCase("y") || temp.equalsIgnoreCase("yes")) {
+                                        if (DEBUG) {
+                                            System.out.println();
+                                        }
+                                        break;
+                                    } else {
+                                        count++;    // Increment if didn't show
+                                    }
+                                } else {    // If not your turn
+                                    scan.nextLine();
+                                    System.out.print("Does player " + player + " show them a card (y/n)? ");
+                                    temp = scan.next();
+
+                                    if (temp.equalsIgnoreCase("y") || temp.equalsIgnoreCase("yes")) {
+                                        guessHistory.add(Arrays.asList(player - 1, guess[0], guess[1], guess[2]));    // They have at least one of those cards
+
+                                        for (int k = 0; k < guess.length; k++) {
+                                            if (players[player - 1][guess[k]] == 0) {
+                                                players[player - 1][guess[k]] = 2;  // Mark as possibly have if no other mark
+                                            }
+                                        }
+
+                                        if (DEBUG) {
+                                            System.out.println("\nDEBUG: Card after player " + player + " showed player " + i + " a card");
+                                            printCard(players, yourTurn);
+                                        }
+
+                                        break;
+                                    } else {    // If didn't show
+                                        for (int k = 0; k < guess.length; k++) {
+                                            players[player - 1][guess[k]] = 1;  // Marks that they don't have those cards
+                                        }
+
+                                        if (DEBUG) {
+                                            System.out.println("\nDEBUG: Card after player " + player + " didn't show player " + i + " a card");
+                                            printCard(players, yourTurn);
+                                        }
+
+                                        count++;    // Increases count every time no one shows
+                                    }
+                                }
+
+                                if (count == players.length - 1) {  // If no one showed, at least one has to be part of the solution
+                                    possibleSolution.add(Arrays.asList(i - 1, guess[0], guess[1], guess[2]));  // Contains at least one solution part
+
+                                    for (int k = 0; k < guess.length; k++) {
+                                        if (players[yourTurn - 1][guess[k]] == 0) // If not marked/not a card you have
+                                        {
+                                            players[yourTurn - 1][guess[k]] = 2;    // Mark as potential solution
+                                        }
+                                    }
+
+                                    if (DEBUG) {
+                                        System.out.println("\nDEBUG: Card after no one showed player " + i + " a card");
+                                        printCard(players, yourTurn);
+                                    }
+                                }
                             }
                         }
-                    }
-                    case 2 -> {
+
+                        if (!DEBUG) {
+                            System.out.println();
+                        }
+
+                        checkHistory(guessHistory, possibleSolution, players, solution, yourTurn);  // Check guess history after each players turn if guess made
                     }
                     case 3 -> {
-                        print(players);
-                        i--;
+                        printCard(players, yourTurn);
+                        i--;    // Go back to current players turn
                     }
                     case 4 -> {
-                        printHistory(history);
-                        i--;
+                        System.out.println("It was " + cards[solution[0]] + " with the " + cards[solution[1]] + " in the " + cards[solution[2]] + "\n");
+                        i--;    // Go back to current players turn
                     }
-                    case 5 -> {
-                        System.out.println("It was " + cards[found[0]] + " with the " + cards[found[1]] + " in the " + cards[found[2]]);
-                        System.out.println();
-                        i--;
+                    case 0 -> {
+                        end = true;
+                        break turn;
                     }
-                    default -> end = false;
                 }
             }
 
             turn++;
-        } while (end);
+        } while (!end);
     }
 
-    public static void check(int[][] players, ArrayList<ArrayList<ArrayList<Integer>>> history) {
-        int runs = 0;
-        int count;
-        int[] changes;
+    public static void checkHistory(ArrayList<List<Integer>> guessHistory, ArrayList<List<Integer>> possibleSolution, int[][] players, int[] solution, int yourTurn) {
+        if (DEBUG) {
+            System.out.println("DEBUG: History before check:");
+            System.out.println("Guess history:\n" + Arrays.deepToString(guessHistory.toArray()).replace("], ", "]\n").replace("[[", "[").replace("]]", "]") + "\n");
+            System.out.println("Possible solution history:\n" + Arrays.deepToString(possibleSolution.toArray()).replace("], ", "]\n").replace("[[", "[").replace("]]", "]") + "\n");
+        }
 
+        int changes;
         do {
-            runs++;
-            changes = new int[12];
+            int count;
+            changes = 0;
 
-            //turn passes
-            for (int i = 0; i < history.size(); i++) {
-                for (int j = 0; j < history.get(i).size(); j++) {
-                    count = 0;
-                    for (int k = 0; k < history.get(i).get(j).size(); k++) {
-                        if (players[i][history.get(i).get(j).get(k)] == 3) {
-                            count = 0;
-                            break;
-                        } else if (players[i][history.get(i).get(j).get(k)] != 1) {
-                            count++;
+            for (int i = 0; i < players.length; i++) {  // Column check/cleaning
+                count = 0;
+                if (i == yourTurn - 1) {
+                    for (int j = 1; j <= 6; j++) {  // Suspects cleaning
+                        if (players[i][j] == 3) {
+                            count++;    // Count the cards you know are part of the solution in the suspects
                         }
                     }
 
-                    if (count == 1) {
-                        for (int k = 0; k < history.get(i).get(j).size(); k++) {
-                            if (players[i][history.get(i).get(j).get(k)] != 1) {
-                                players[i][history.get(i).get(j).get(k)] = 3;
-                                changes[1]++;
+                    if (count == 1) {   // If one is found, no others can be part of the solution
+                        for (int j = 1; j <= 6; j++) {
+                            if (players[i][j] != 1 && players[i][j] != 3) {
+                                players[i][j] = 1;
+                                changes++;
                             }
                         }
-                    } else if (count == 0) {
-                        history.get(i).remove(j);
-                        changes[2]++;
+                    }
+
+                    count = 0;
+                    for (int j = 1; j <= 6; j++) {  // Suspects check
+                        if (players[i][j] == 1) {
+                            count++;    // Count the cards you know aren't part of the solution in the suspects
+                        }
+                    }
+
+                    if (count == 5) {   // If all but one is not it, last must be part of the solution
+                        for (int j = 1; j <= 6; j++) {
+                            if (players[i][j] != 1 && players[i][j] != 3) {
+                                players[i][j] = 3;
+
+                                solution[0] = j;    // Add to correct solution index
+
+                                for (int k = 0; k < players.length; k++) {
+                                    if (k != yourTurn - 1) {
+                                        players[k][j] = 1;    // Marks that no one else has that card
+                                    }
+                                }
+
+                                changes++;
+                            }
+                        }
+                    }
+
+                    count = 0;
+                    for (int j = 7; j <= 12; j++) {  // Weapons cleaning
+                        if (players[i][j] == 3) {
+                            count++;    // Count the cards you know are part of the solution in the weapons
+                        }
+                    }
+
+                    if (count == 1) {   // If one is found, no others can be part of the solution
+                        for (int j = 7; j <= 12; j++) {
+                            if (players[i][j] != 1 && players[i][j] != 3) {
+                                players[i][j] = 1;
+                                changes++;
+                            }
+                        }
+                    }
+
+                    count = 0;
+                    for (int j = 7; j <= 12; j++) {  // Weapons check
+                        if (players[i][j] == 1) {
+                            count++;    // Count the cards you know aren't part of the solution in the Weapons
+                        }
+                    }
+
+                    if (count == 5) {   // If all but one is not it, last must be part of the solution
+                        for (int j = 7; j <= 12; j++) {
+                            if (players[i][j] != 1 && players[i][j] != 3) {
+                                players[i][j] = 3;
+
+                                solution[1] = j;    // Add to correct solution index
+
+                                for (int k = 0; k < players.length; k++) {
+                                    if (k != yourTurn - 1) {
+                                        players[k][j] = 1;    // Marks that no one else has that card
+                                    }
+                                }
+
+                                changes++;
+                            }
+                        }
+                    }
+
+                    count = 0;
+                    for (int j = 13; j <= 21; j++) {  // Rooms cleaning
+                        if (players[i][j] == 3) {
+                            count++;    // Count the cards you know are part of the solution in the rooms
+                        }
+                    }
+
+                    if (count == 1) {   // If one is found, no others can be part of the solution
+                        for (int j = 13; j <= 21; j++) {
+                            if (players[i][j] != 1 && players[i][j] != 3) {
+                                players[i][j] = 1;
+                                changes++;
+                            }
+                        }
+                    }
+
+                    count = 0;
+                    for (int j = 13; j <= 21; j++) {  // Rooms check
+                        if (players[i][j] == 1) {
+                            count++;    // Count the cards you know aren't part of the solution in the Weapons
+                        }
+                    }
+
+                    if (count == 8) {   // If all but one is not it, last must be part of the solution
+                        for (int j = 13; j <= 21; j++) {
+                            if (players[i][j] != 1 && players[i][j] != 3) {
+                                players[i][j] = 3;
+
+                                solution[2] = j;    // Add to correct solution index
+
+                                for (int k = 0; k < players.length; k++) {
+                                    if (k != yourTurn - 1) {
+                                        players[k][j] = 1;    // Marks that no one else has that card
+                                    }
+                                }
+
+                                changes++;
+                            }
+                        }
+                    }
+                } else {    // If not you
+                    for (int j = 1; j < players[i].length; j++) {
+                        if (players[i][j] == 3) {
+                            count++;    // Count the cards you know they have
+                        }
+                    }
+
+                    if (count == players[i][0]) {   // If they have their max, then they have no other cards
+                        for (int j = 1; j < players[i].length; j++) {
+                            if (players[i][j] != 1 && players[i][j] != 3) {
+                                players[i][j] = 1;
+                                changes++;
+                            }
+                        }
                     }
                 }
             }
 
-            //only left horizontal
-            for (int i = 1; i < players[0].length; i++) {
+            for (int i = 1; i < players[0].length; i++) {   // Row check
                 count = 0;
                 for (int[] player : players) {
-                    if (player[i] == 3) {
-                        count = -1;
-                        break;
-                    } else if (player[i] != 1) {
-                        count++;
+                    if (player[i] == 1) {
+                        count++;    // Count the cards you know
                     }
                 }
 
-                if (count == -1) {
+                if (count == players.length - 1) {   // If all others in row are found, they must have the last or is part of solution
                     for (int[] player : players) {
-                        if (player[i] != 3 && player[i] != 1) {
-                            player[i] = 1;
-                            changes[3]++;
-                        }
-                    }
-                } else if (count == 1) {
-                    for (int j = 0; j < players.length; j++) {
-                        if (players[j][i] != 1 && players[j][i] != 3 && j != 0) {
-                            players[j][i] = 3;
-                            changes[4]++;
-                        }
-                    }
-                }
-            }
+                        if (player[i] != 1 && player[i] != 3) {
+                            player[i] = 3;
 
-            //only left vertical player 1 (1 - 6)
-            count = 0;
-            for (int i = 1; i < 7; i++) {
-                if (players[0][i] == 3) {
-                    count = -1;
-                    break;
-                } else if (players[0][i] != 1) {
-                    count++;
-                }
-            }
+                            if (players[yourTurn - 1][i] == 3) {
+                                if (i <= 6) {       // Add to correct solution index
+                                    solution[0] = i;
+                                } else if (i > 6 && i <= 12) {
+                                    solution[1] = i;
+                                } else {
+                                    solution[2] = i;
+                                }
+                            }
 
-            if (count == -1) {
-                for (int i = 1; i < 7; i++) {
-                    if (players[0][i] != 3 && players[0][i] != 1) {
-                        players[0][i] = 1;
-                        changes[5]++;
-                    }
-                }
-            } else if (count == 1) {
-                for (int i = 1; i < 7; i++) {
-                    if (players[0][i] != 1 && players[0][i] != 3) {
-                        players[0][i] = 3;
-                        changes[6]++;
-                    }
-                }
-            }
-
-            //only left vertical player 1 (7 - 12)
-            count = 0;
-            for (int i = 7; i < 13; i++) {
-                if (players[0][i] == 3) {
-                    count = -1;
-                    break;
-                } else if (players[0][i] != 1) {
-                    count++;
-                }
-            }
-
-            if (count == -1) {
-                for (int i = 7; i < 13; i++) {
-                    if (players[0][i] != 3 && players[0][i] != 1) {
-                        players[0][i] = 1;
-                        changes[7]++;
-                    }
-                }
-            } else if (count == 1) {
-                for (int i = 7; i < 13; i++) {
-                    if (players[0][i] != 1 && players[0][i] != 3) {
-                        players[0][i] = 3;
-                        changes[8]++;
-                    }
-                }
-            }
-
-            //only left vertical player 1 (13 - 21)
-            count = 0;
-            for (int i = 13; i < 22; i++) {
-                if (players[0][i] == 3) {
-                    count = -1;
-                    break;
-                } else if (players[0][i] != 1) {
-                    count++;
-                }
-            }
-
-            if (count == -1) {
-                for (int i = 13; i < 22; i++) {
-                    if (players[0][i] != 3 && players[0][i] != 1) {
-                        players[0][i] = 1;
-                        changes[9]++;
-                    }
-                }
-            } else if (count == 1) {
-                for (int i = 13; i < 22; i++) {
-                    if (players[0][i] != 1 && players[0][i] != 3) {
-                        players[0][i] = 3;
-                        changes[10]++;
-                    }
-                }
-            }
-
-            //only left vertical other players
-            for (int i = 1; i < players.length; i++) {
-                count = players[i][0];
-                for (int j = 1; j < players[i].length; j++) {
-                    if (players[i][j] == 3) {
-                        count--;
-                    }
-                }
-
-                if (count == 0) {
-                    for (int j = 1; j < players[i].length; j++) {
-                        if (players[i][j] != 3 && players[i][j] != 1) {
-                            players[i][j] = 1;
-                            changes[11]++;
+                            changes++;
                         }
                     }
                 }
             }
 
-            for (int i = 1; i < changes.length; i++) {
-                changes[0] += changes[i];
+            for (Iterator<List<Integer>> it = guessHistory.iterator(); it.hasNext();) {
+                List<Integer> guess = it.next();
+                count = 0;
+                for (int i = 1; i < guess.size(); i++) {
+                    if (players[guess.get(0)][guess.get(i)] == 1) {
+                        count++;
+                    } else if (players[guess.get(0)][guess.get(i)] == 3) {
+                        if (DEBUG) {
+                            System.out.println("DEBUG: Guess history " + Arrays.toString(guess.toArray()) + " already found, removed");
+                        }
+
+                        it.remove();    // If already found, delete
+                        count = 0;
+
+                        break;
+                    }
+                }
+
+                if (count == 2) {   // If two are not it, then they must have the third
+                    for (int i = 1; i < guess.size(); i++) {
+                        if (players[guess.get(0)][guess.get(i)] != 1) {
+                            players[guess.get(0)][guess.get(i)] = 3;
+
+                            for (int j = 0; j < players.length; j++) {
+                                if (j != guess.get(0)) {
+                                    players[j][guess.get(i)] = 1;    // Marks that no one else has that card
+                                }
+                            }
+
+                            if (DEBUG) {
+                                System.out.println("DEBUG: Guess history " + Arrays.toString(guess.toArray()) + " removed");
+                                printCard(players, yourTurn);
+                            }
+
+                            it.remove();
+                            changes++;
+
+                            break;
+                        }
+                    }
+                }
             }
-            //System.out.println("Changes: " + changes[0] + "  " + Arrays.toString(changes));
-        } while (changes[0] != 0);
-        System.out.println();
+
+            count = 0;
+            for (Iterator<List<Integer>> it = possibleSolution.iterator(); it.hasNext();) {
+                List<Integer> possible = it.next();
+                for (int i = 1; i < possible.size(); i++) {
+                    if (players[possible.get(0)][possible.get(i)] == 3) {
+                        count++;
+                    } else if (players[yourTurn - 1][possible.get(i)] == 3) {
+                        if (DEBUG) {
+                            System.out.println("DEBUG: Possible solution history " + Arrays.toString(possible.toArray()) + " already found, removed");
+                        }
+
+                        it.remove();    // If already found, delete
+                        count = 0;
+
+                        break;
+                    }
+                }
+
+                if (count == 2) {   // If they hold two, then the third must be part of solution (most of the time)
+                    for (int i = 1; i < possible.size(); i++) {
+                        if (players[possible.get(0)][possible.get(i)] != 3) {
+                            players[yourTurn - 1][possible.get(i)] = 3;
+
+                            if (possible.get(i) <= 6) {        // Add to correct solution index
+                                solution[0] = possible.get(i);
+                            } else if (possible.get(i) > 6 && possible.get(i) <= 12) {
+                                solution[1] = possible.get(i);
+                            } else {
+                                solution[2] = possible.get(i);
+                            }
+
+                            for (int j = 0; j < players.length; j++) {
+                                if (j != possible.get(0)) {
+                                    players[possible.get(j)][possible.get(i)] = 1;  // Marks that no one else has that card
+                                }
+                            }
+
+                            if (DEBUG) {
+                                System.out.println("DEBUG: Possible solution history " + Arrays.toString(possible.toArray()) + " removed");
+                                printCard(players, yourTurn);
+                            }
+
+                            it.remove();
+                            changes++;
+
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (DEBUG) {
+                if (changes != 0) {
+                    System.out.println("DEBUG: Card after " + changes + " changes made");
+                    printCard(players, yourTurn);
+                    System.out.println("DEBUG: History after check (" + changes + " changes):");
+                    System.out.println("Guess history:\n" + Arrays.deepToString(guessHistory.toArray()).replace("], ", "]\n").replace("[[", "[").replace("]]", "]") + "\n");
+                    System.out.println("Possible solution history:\n" + Arrays.deepToString(possibleSolution.toArray()).replace("], ", "]\n").replace("[[", "[").replace("]]", "]") + "\n");
+                } else {
+                    System.out.println("DEBUG: No changes made\n");
+                }
+            }
+        } while (changes != 0);
     }
 
-    public static void print(int[][] players) {
+    public static void printCard(int[][] players, int yourTurn) {
         System.out.print("-------------------");
         for (int i = 1; i <= players.length; i++) {
             System.out.print("----");
         }
-        System.out.print("\n| Players         |");
+
+        System.out.print("\n| Players         | U |");
         for (int i = 1; i <= players.length; i++) {
-            System.out.print(" " + i + " |");
+            if (i != yourTurn) {
+                System.out.print(" " + i + " |");
+            }
         }
+
         System.out.print("\n-------------------");
         for (int i = 1; i <= players.length; i++) {
             System.out.print("----");
@@ -538,22 +647,25 @@ public class Clue {
             System.out.print("    ");
         }
         System.out.print("   |");
+
         System.out.print("\n-------------------");
         for (int i = 1; i <= players.length; i++) {
             System.out.print("----");
         }
+
         System.out.print("\n| Colonel Mustard |");
-        mark(players, 1);
+        printMarks(players, 1, yourTurn);
         System.out.print("\n| Professor Plum  |");
-        mark(players, 2);
+        printMarks(players, 2, yourTurn);
         System.out.print("\n| Mr. Green       |");
-        mark(players, 3);
+        printMarks(players, 3, yourTurn);
         System.out.print("\n| Mrs. Peacock    |");
-        mark(players, 4);
+        printMarks(players, 4, yourTurn);
         System.out.print("\n| Miss Scarlet    |");
-        mark(players, 5);
+        printMarks(players, 5, yourTurn);
         System.out.print("\n| Mrs. White      |");
-        mark(players, 6);
+        printMarks(players, 6, yourTurn);
+
         System.out.print("\n-------------------");
         for (int i = 1; i <= players.length; i++) {
             System.out.print("----");
@@ -564,22 +676,25 @@ public class Clue {
             System.out.print("    ");
         }
         System.out.print("   |");
+
         System.out.print("\n-------------------");
         for (int i = 1; i <= players.length; i++) {
             System.out.print("----");
         }
+
         System.out.print("\n| Knife           |");
-        mark(players, 7);
+        printMarks(players, 7, yourTurn);
         System.out.print("\n| Candlestick     |");
-        mark(players, 8);
+        printMarks(players, 8, yourTurn);
         System.out.print("\n| Revolver        |");
-        mark(players, 9);
+        printMarks(players, 9, yourTurn);
         System.out.print("\n| Rope            |");
-        mark(players, 10);
+        printMarks(players, 10, yourTurn);
         System.out.print("\n| Lead Pipe       |");
-        mark(players, 11);
+        printMarks(players, 11, yourTurn);
         System.out.print("\n| Wrench          |");
-        mark(players, 12);
+        printMarks(players, 12, yourTurn);
+
         System.out.print("\n-------------------");
         for (int i = 1; i <= players.length; i++) {
             System.out.print("----");
@@ -590,56 +705,67 @@ public class Clue {
             System.out.print("    ");
         }
         System.out.print("   |");
+
         System.out.print("\n-------------------");
         for (int i = 1; i <= players.length; i++) {
             System.out.print("----");
         }
+
         System.out.print("\n| Hall            |");
-        mark(players, 13);
+        printMarks(players, 13, yourTurn);
         System.out.print("\n| Lounge          |");
-        mark(players, 14);
+        printMarks(players, 14, yourTurn);
         System.out.print("\n| Dining Room     |");
-        mark(players, 15);
+        printMarks(players, 15, yourTurn);
         System.out.print("\n| Kitchen         |");
-        mark(players, 16);
+        printMarks(players, 16, yourTurn);
         System.out.print("\n| Ballroom        |");
-        mark(players, 17);
+        printMarks(players, 17, yourTurn);
         System.out.print("\n| Conservatory    |");
-        mark(players, 18);
+        printMarks(players, 18, yourTurn);
         System.out.print("\n| Billiard Room   |");
-        mark(players, 19);
+        printMarks(players, 19, yourTurn);
         System.out.print("\n| Library         |");
-        mark(players, 20);
+        printMarks(players, 20, yourTurn);
         System.out.print("\n| Study           |");
-        mark(players, 21);
+        printMarks(players, 21, yourTurn);
+
         System.out.print("\n-------------------");
         for (int i = 1; i <= players.length; i++) {
             System.out.print("----");
         }
-        System.out.println();
-        System.out.println();
+        System.out.println("\n");
     }
 
-    public static void printHistory(ArrayList<ArrayList<ArrayList<Integer>>> history) {
-        for (int i = 0; i < history.size(); i++) {
-            System.out.println("Player " + (i + 1) + " Guesses");
-            for (int j = 0; j < history.get(i).size(); j++) {
-                System.out.println(history.get(i).get(j));
-            }
-            System.out.println();
+    public static void printMarks(int[][] players, int num, int yourTurn) {
+        System.out.print(" ");
+        switch (players[yourTurn - 1][num]) {
+            case 1 ->
+                System.out.print("X");
+            case 2 ->
+                System.out.print("?");
+            case 3 ->
+                System.out.print("O");
+            default ->
+                System.out.print(" ");
         }
-    }
+        System.out.print(" |");
 
-    public static void mark(int[][] players, int num) {
         for (int i = 1; i <= players.length; i++) {
-            System.out.print(" ");
-            switch (players[i - 1][num]) {
-                case 1 -> System.out.print("X");
-                case 2 -> System.out.print("?");
-                case 3 -> System.out.print("O");
-                default -> System.out.print(" ");
+            if (i != yourTurn) {
+                System.out.print(" ");
+                switch (players[i - 1][num]) {
+                    case 1 ->
+                        System.out.print("X");
+                    case 2 ->
+                        System.out.print("?");
+                    case 3 ->
+                        System.out.print("O");
+                    default ->
+                        System.out.print(" ");
+                }
+                System.out.print(" |");
             }
-            System.out.print(" |");
         }
     }
 }
